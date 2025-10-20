@@ -1,8 +1,8 @@
 # Down Detector
 
-<p align="center">
-    <img src="https://github.com/gurraoptimus/downdetector/blob/main/assets/downdetector-logo.svg" alt="Down Detector Logo" width="120" height="120">
-</p>
+<div align="center">
+    <img src="https://github.com/gurraoptimus/downdetector/blob/main/assets/downdetector-logo.svg" alt="Down Detector Logo" width="200" height="200">
+</div>
 
 > A real-time website monitoring application with an animated terminal interface.
 
