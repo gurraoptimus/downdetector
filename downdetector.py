@@ -21,7 +21,7 @@ class DownDetectorApp:
         self.websites = []
         self.current_version = "2.1.0"  # Current app version
         self.github_repo = "gurraoptimus/downdetector"  # Replace with your actual repo
-        self.update_url = f"https://api.github.com/repos/{self.github_repo}/.git"
+        self.update_url = f"https://api.github.com/repos/{self.github_repo}/releases/latest"
         
         # Load settings from environment variables with defaults
         self.timeout = int(os.getenv('TIMEOUT', '5'))
