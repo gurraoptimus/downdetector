@@ -21,7 +21,7 @@ class DownDetectorApp:
         self.websites = []
         self.current_version = "2.1.0"  # Current app version
         self.github_repo = "gurraoptimus/downdetector"  # Replace with your actual repo
-        self.update_url = f"https://api.github.com/repos/{self.github_repo}/releases/latest"
+        self.update_url = f"https://api.github.com/repos/{self.github_repo}/.git"
         
         # Load settings from environment variables with defaults
         self.timeout = int(os.getenv('TIMEOUT', '5'))
@@ -60,7 +60,7 @@ ENABLE_SOUNDS=true
 AUTO_UPDATE_CHECK=true
 
 # User Agent for HTTP requests
-USER_AGENT=Mozilla/5.0 Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36
+USER_AGENT=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36
 
 # Maximum retries for failed requests
 MAX_RETRIES=3
@@ -380,8 +380,8 @@ DEBUG_MODE=false
             {"version": "2.1.0", "date": "2025-01-15", "type": "Major", "description": "Added system updates feature"},
             {"version": "2.0.5", "date": "2025-01-10", "type": "Patch", "description": "Bug fixes and performance improvements"},
             {"version": "2.0.0", "date": "2025-01-01", "type": "Major", "description": "Complete UI overhaul with animations"},
-            {"version": "1.5.0", "date": "2025-12-15", "type": "Minor", "description": "Added sound notifications"},
-            {"version": "1.0.0", "date": "2025-12-01", "type": "Major", "description": "Initial release"}
+            {"version": "1.5.0", "date": "2024-12-15", "type": "Minor", "description": "Added sound notifications"},
+            {"version": "1.0.0", "date": "2024-12-01", "type": "Major", "description": "Initial release"}
         ]
         
         print(f"\n{Back.BLUE}{Fore.WHITE} 📊 UPDATE HISTORY {Style.RESET_ALL}")
@@ -426,7 +426,7 @@ DEBUG_MODE=false
                 print(f"{Fore.GREEN}✅ Default .env file created successfully!")
                 time.sleep(1)
         
-        # ASCII Art Logo (Fixed formatting)
+        # ASCII Art Logo
         logo = [
             "╔═══════════════════════════════════════════════════════════════════╗",
             "║ ██████╗  ██████╗ ██╗    ██╗███╗   ██╗                              ║",
