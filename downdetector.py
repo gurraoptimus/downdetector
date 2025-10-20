@@ -4,13 +4,16 @@ import os
 import sys
 import json
 import winsound
+import platform
+import subprocess
+
 from datetime import datetime
 from colorama import Fore, Back, Style, init
 from dotenv import load_dotenv
-import subprocess
-import platform
 
 # Load environment variables from .env file
+# update: .env file
+# update: app version 2.2.0 from github raw repository 
 load_dotenv()
 
 # Initialize colorama for cross-platform colored terminal text
@@ -19,9 +22,9 @@ init(autoreset=True)
 class DownDetectorApp:
     def __init__(self):
         self.websites = []
-        self.current_version = "2.1.0"  # Current app version
+        self.current_version = "2.3.0"  # Current app version
         self.github_repo = "gurraoptimus/downdetector"  # Replace with your actual repo
-        self.update_url = f"https://api.github.com/repos/{self.github_repo}/releases/latest"
+        self.update_url = f"https://raw.githubusercontent.com/{self.github_repo}/refs/heads/main/downdetector.py"
         
         # Load settings from environment variables with defaults
         self.timeout = int(os.getenv('TIMEOUT', '5'))
@@ -234,9 +237,11 @@ DEBUG_MODE=false
         self.print_header()
         self.bounce_text(f"{Fore.WHITE}{Back.BLUE}  🔄 SYSTEM UPDATES  {Style.RESET_ALL}", Fore.WHITE)
         
-        update_menu = f"""{Fore.CYAN}┌─ Update Management ───────────────────────────────────────┐
+        update_menu = f"""{Fore.CYAN}
+┌─ Update Management ───────────────────────────────────────┐
 │                                                           │
 │ Current Version: {Back.BLUE}{Fore.WHITE} Down Detector v{self.current_version} {Style.RESET_ALL}            {Fore.CYAN}│
+│                                                           │
 │ Auto-Check: {Back.BLUE}{Fore.WHITE} {'Enabled' if self.auto_update_check else 'Disabled'} {Style.RESET_ALL}                      {Fore.CYAN}│
 │                                                           │
 │ {Back.GREEN}{Fore.WHITE} 1 {Style.RESET_ALL} Check for Updates                             {Fore.CYAN}│
@@ -275,23 +280,25 @@ DEBUG_MODE=false
         """Display detailed version information"""
         self.loading_animation("Loading version information", 0.8)
         
-        version_info = f"""{Fore.CYAN}┌─ Version Information ─────────────────────────────────────┐
+        version_info = f"""{Fore.CYAN}
+┌─ Version Information ─────────────────────────────────────┐
 │                                                           │
 │ Application: Down Detector                                │
-│ Version: v{self.current_version}                                     │
+│ Version: v{self.current_version}                          │
 │ Developer: Gurraoptimus Development                       │
-│ Platform: {platform.system()} {platform.release()}                            │
-│ Python Version: {platform.python_version()}                         │
+│ Platform: {platform.system()} {platform.release()}        │
+│ Python Version: {platform.python_version()}               │
 │                                                           │
 │ Features in this version:                                 │
-│ • Real-time website monitoring                           │
-│ • Animated dashboard interface                           │
-│ • Sound notifications                                    │
-│ • Configuration management                               │
-│ • System updates                                         │
-│ • Multi-platform support                                │
+│ • Real-time website monitoring                            │
+│ • Animated dashboard interface                            │
+│ • Sound notifications                                     │
+│ • Configuration management                                │
+│ • System updates                                          │
+│ • Multi-platform support                                  │
 │                                                           │
-└───────────────────────────────────────────────────────────┘"""
+└───────────────────────────────────────────────────────────┘
+"""
         
         print(f"\n{version_info}")
     
@@ -377,11 +384,11 @@ DEBUG_MODE=false
         
         # This is a simulated update history - in a real app, you'd store this data
         history = [
-            {"version": "2.1.0", "date": "2025-01-15", "type": "Major", "description": "Added system updates feature"},
-            {"version": "2.0.5", "date": "2025-01-10", "type": "Patch", "description": "Bug fixes and performance improvements"},
-            {"version": "2.0.0", "date": "2025-01-01", "type": "Major", "description": "Complete UI overhaul with animations"},
-            {"version": "1.5.0", "date": "2024-12-15", "type": "Minor", "description": "Added sound notifications"},
-            {"version": "1.0.0", "date": "2024-12-01", "type": "Major", "description": "Initial release"}
+            {"version": "2.3.0", "date": "2025-10-21", "type": "Major", "description": "Added system updates feature"},
+            {"version": "2.2.0", "date": "2025-10-21", "type": "Patch", "description": "Bug fixes and performance improvements"},
+            {"version": "2.0.0", "date": "2025-10-21", "type": "Major", "description": "Complete UI overhaul with animations"},
+            {"version": "1.5.0", "date": "2025-10-21", "type": "Minor", "description": "Added sound notifications"},
+            {"version": "1.0.0", "date": "2025-10-21", "type": "Major", "description": "Initial release"}
         ]
         
         print(f"\n{Back.BLUE}{Fore.WHITE} 📊 UPDATE HISTORY {Style.RESET_ALL}")
@@ -547,7 +554,6 @@ DEBUG_MODE=false
                 print('\a', end='', flush=True)
             except:
                 pass
-
     def loading_animation(self, text="Loading", duration=2):
         """Animated loading spinner"""
         frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
@@ -707,7 +713,7 @@ DEBUG_MODE=false
             print(line)
         print(Style.RESET_ALL)
         
-        nav_items = "█ HOME █ MONITOR █ SETTINGS █ UPDATES █ ABOUT █"
+        nav_items = " █ HOME █ MONITOR █ SETTINGS █ UPDATES █ ABOUT █"
         print(f"{Back.CYAN}{Fore.BLACK} {nav_items} {Style.RESET_ALL}\n")
     
     def print_menu(self):
