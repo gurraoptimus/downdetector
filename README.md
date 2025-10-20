@@ -1,8 +1,6 @@
-# Down Detector
-
-<div align="center">
-    <img src="https://github.com/gurraoptimus/downdetector/blob/main/assets/downdetector-logo.svg" alt="Down Detector Logo" width="200" height="200">
-</div>
+<p align="center">
+    <img src="https://github.com/gurraoptimus/downdetector/blob/main/assets/downdetector-logo.svg" alt="Down Detector Logo" width="600" height="600">
+</p>
 
 > A real-time website monitoring application with an animated terminal interface.
 
@@ -21,13 +19,13 @@
 
 1. Clone or download the repository
 2. Install required dependencies:
-        ```bash
-        pip install requests colorama python-dotenv
-        ```
+   ```bash
+   pip install requests colorama python-dotenv
+   ```
 3. Run the application:
-        ```bash
-        python downdetector.py
-        ```
+   ```bash
+   python downdetector.py
+   ```
 
 ## ⚙️ Configuration
 
