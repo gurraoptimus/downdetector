@@ -19,7 +19,7 @@ init(autoreset=True)
 class DownDetectorApp:
     def __init__(self):
         self.websites = []
-        self.current_version = "2.2.0"  # Current app version
+        self.current_version = "2.1.0"  # Current app version
         self.github_repo = "gurraoptimus/downdetector"  # Replace with your actual repo
         self.update_url = f"https://api.github.com/repos/{self.github_repo}/.git"
         
