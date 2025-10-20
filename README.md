@@ -1,7 +1,7 @@
 # Down Detector
 
 <p align="center">
-    <img src="https://via.placeholder.com/120x120/4CAF50/FFFFFF?text=DD" alt="Down Detector Logo" width="120" height="120">
+    <img src="https://github.com/gurraoptimus/downdetector/blob/main/assets/downdetector-logo.svg" alt="Down Detector Logo" width="120" height="120">
 </p>
 
 > A real-time website monitoring application with an animated terminal interface.
