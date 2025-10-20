@@ -6,6 +6,8 @@ import json
 import winsound
 import platform
 import subprocess
+import shutil
+import logging
 
 from datetime import datetime
 from colorama import Fore, Back, Style, init
@@ -24,7 +26,7 @@ class DownDetectorApp:
         self.websites = []
         self.current_version = "2.3.0"  # Current app version
         self.github_repo = "gurraoptimus/downdetector"  # Replace with your actual repo
-        self.update_url = f"https://raw.githubusercontent.com/{self.github_repo}/refs/heads/main/downdetector.py"
+        self.update_url = f"https://api.github.com/repos/{self.github_repo}/releases/latest"
         
         # Load settings from environment variables with defaults
         self.timeout = int(os.getenv('TIMEOUT', '5'))
@@ -33,6 +35,11 @@ class DownDetectorApp:
         self.animation_speed = float(os.getenv('ANIMATION_SPEED', '0.1'))
         self.enable_sounds = os.getenv('ENABLE_SOUNDS', 'true').lower() == 'true'
         self.auto_update_check = os.getenv('AUTO_UPDATE_CHECK', 'true').lower() == 'true'
+        self.log_file = os.getenv('LOG_FILE', 'downdetector.log')
+        self.debug_mode = os.getenv('DEBUG_MODE', 'false').lower() == 'true'
+        
+        # Setup logging
+        self.setup_logging()
         
         self.bootup_sequence()
         self.load_websites()
@@ -40,6 +47,83 @@ class DownDetectorApp:
         # Check for updates on startup if enabled
         if self.auto_update_check:
             self.check_for_updates(silent=True)
+    
+    def setup_logging(self):
+        """Setup logging configuration"""
+        try:
+            # Determine log level based on debug mode
+            log_level = logging.DEBUG if self.debug_mode else logging.INFO
+            
+            # Create formatter
+            formatter = logging.Formatter(
+                '%(asctime)s | %(levelname)-8s | %(message)s',
+                datefmt='%Y-%m-%d %H:%M:%S'
+            )
+            
+            # Setup file handler
+            file_handler = logging.FileHandler(self.log_file, encoding='utf-8')
+            file_handler.setLevel(log_level)
+            file_handler.setFormatter(formatter)
+            
+            # Setup console handler (only for errors and warnings if not in debug mode)
+            console_handler = logging.StreamHandler()
+            console_handler.setLevel(logging.WARNING if not self.debug_mode else logging.DEBUG)
+            console_handler.setFormatter(formatter)
+            
+            # Setup logger
+            self.logger = logging.getLogger('DownDetector')
+            self.logger.setLevel(log_level)
+            
+            # Clear existing handlers to avoid duplicates
+            self.logger.handlers.clear()
+            
+            # Add handlers
+            self.logger.addHandler(file_handler)
+            if self.debug_mode:
+                self.logger.addHandler(console_handler)
+            
+            # Log startup
+            self.logger.info(f"Down Detector v{self.current_version} starting up")
+            self.logger.info(f"Log file: {self.log_file}")
+            self.logger.info(f"Debug mode: {'ON' if self.debug_mode else 'OFF'}")
+            
+        except Exception as e:
+            print(f"{Fore.RED}❌ Error setting up logging: {e}")
+            # Create a basic logger as fallback
+            self.logger = logging.getLogger('DownDetector')
+            self.logger.setLevel(logging.INFO)
+    
+    def log_website_check(self, website, is_up, status, response_time=None):
+        """Log website check results"""
+        try:
+            status_text = "UP" if is_up else "DOWN"
+            if response_time:
+                self.logger.info(f"CHECK | {website} | {status_text} | {status} | {response_time:.2f}ms")
+            else:
+                self.logger.info(f"CHECK | {website} | {status_text} | {status}")
+        except Exception as e:
+            self.logger.error(f"Error logging website check: {e}")
+    
+    def log_system_event(self, event_type, message):
+        """Log system events"""
+        try:
+            self.logger.info(f"SYSTEM | {event_type} | {message}")
+        except Exception as e:
+            print(f"Error logging system event: {e}")
+    
+    def log_error(self, error_type, message):
+        """Log errors"""
+        try:
+            self.logger.error(f"ERROR | {error_type} | {message}")
+        except Exception as e:
+            print(f"Error logging error: {e}")
+    
+    def log_update_event(self, event, details=""):
+        """Log update-related events"""
+        try:
+            self.logger.info(f"UPDATE | {event} | {details}")
+        except Exception as e:
+            print(f"Error logging update event: {e}")
     
     def create_env_file(self):
         """Create a .env file with default settings"""
@@ -63,7 +147,7 @@ ENABLE_SOUNDS=true
 AUTO_UPDATE_CHECK=true
 
 # User Agent for HTTP requests
-USER_AGENT=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36
+USER_AGENT=Mozilla/5.0 (Windows; NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36
 
 # Maximum retries for failed requests
 MAX_RETRIES=3
@@ -92,7 +176,8 @@ DEBUG_MODE=false
         
         try:
             headers = {
-                'User-Agent': 'DownDetector-UpdateChecker/1.0'
+                'User-Agent': 'DownDetector-UpdateChecker/1.0',
+                'Accept': 'application/vnd.github.v3+json'
             }
             response = requests.get(self.update_url, headers=headers, timeout=10)
             
@@ -105,6 +190,8 @@ DEBUG_MODE=false
                 
                 if self.is_newer_version(latest_version, self.current_version):
                     if not silent:
+                        # Pass the raw download URL for direct file download
+                        raw_download_url = f"https://raw.githubusercontent.com/{self.github_repo}/main/downdetector.py"
                         self.display_update_available(latest_version, release_notes, download_url, published_date)
                     else:
                         print(f"\n{Back.GREEN}{Fore.WHITE} 🔔 UPDATE AVAILABLE {Style.RESET_ALL} Version {latest_version} is available!")
@@ -168,23 +255,97 @@ DEBUG_MODE=false
         print(f"{Fore.CYAN}└───────────────────────────────────────────────────────────┘")
         
         print(f"\n{Fore.YELLOW}Update Options:")
-        print(f"{Back.GREEN}{Fore.WHITE} 1 {Style.RESET_ALL} Open download page in browser")
-        print(f"{Back.BLUE}{Fore.WHITE} 2 {Style.RESET_ALL} Copy download link to clipboard")
-        print(f"{Back.YELLOW}{Fore.BLACK} 3 {Style.RESET_ALL} View full release notes")
-        print(f"{Back.RED}{Fore.WHITE} 4 {Style.RESET_ALL} Skip this update")
+        print(f"{Back.GREEN}{Fore.WHITE} 1 {Style.RESET_ALL} Download and install update")
+        print(f"{Back.BLUE}{Fore.WHITE} 2 {Style.RESET_ALL} Open download page in browser")
+        print(f"{Back.CYAN}{Fore.WHITE} 3 {Style.RESET_ALL} Copy download link to clipboard")
+        print(f"{Back.YELLOW}{Fore.BLACK} 4 {Style.RESET_ALL} View full release notes")
+        print(f"{Back.RED}{Fore.WHITE} 5 {Style.RESET_ALL} Skip this update")
         
-        choice = input(f"\n{Fore.CYAN}Select option (1-4): ").strip()
+        choice = input(f"\n{Fore.CYAN}Select option (1-5): ").strip()
         
         if choice == '1':
-            self.open_browser(url)
+            self.download_and_install_update(version)
         elif choice == '2':
-            self.copy_to_clipboard(url)
+            self.open_browser(url)
         elif choice == '3':
-            self.show_full_release_notes(notes)
+            self.copy_to_clipboard(url)
         elif choice == '4':
+            self.show_full_release_notes(notes)
+        elif choice == '5':
             self.bounce_text(f"{Fore.YELLOW}Update skipped", Fore.YELLOW)
         
         input(f"\n{Fore.CYAN}Press Enter to continue...")
+    
+    def download_and_install_update(self, version):
+        """Download and install the latest version from GitHub"""
+        self.log_update_event("UPDATE_DOWNLOAD_STARTED", f"Starting download of version {version}")
+        try:
+            # Construct the raw file URL
+            raw_url = f"https://raw.githubusercontent.com/{self.github_repo}/main/downdetector.py"
+            
+            print(f"\n{Back.BLUE}{Fore.WHITE} 📥 DOWNLOADING UPDATE {Style.RESET_ALL}")
+            self.loading_animation("Downloading latest version", 2.0)
+            
+            # Download the file
+            headers = {
+                'User-Agent': 'DownDetector-Updater/1.0',
+                'Accept': 'text/plain'
+            }
+            response = requests.get(raw_url, headers=headers, timeout=30)
+            
+            if response.status_code == 200:
+                # Create backup of current file
+                backup_name = f"downdetector_backup_{self.current_version}.py"
+                try:
+                    shutil.copy(__file__, backup_name)
+                    print(f"{Fore.GREEN}✅ Backup created: {backup_name}")
+                except Exception as e:
+                    print(f"{Fore.YELLOW}⚠️  Could not create backup: {e}")
+                
+                # Save the new version
+                try:
+                    with open(__file__, 'w', encoding='utf-8') as f:
+                        f.write(response.text)
+                    
+                    self.log_update_event("UPDATE_INSTALLED", f"Successfully updated to version {version}")
+                    self.bounce_text(f"{Back.GREEN}{Fore.WHITE} ✅ UPDATE SUCCESSFUL {Style.RESET_ALL}", Fore.GREEN)
+                    print(f"{Fore.CYAN}📱 Version {version} has been downloaded and installed!")
+                    print(f"{Fore.YELLOW}🔄 Please restart the application to use the new version.")
+                    
+                    restart_choice = input(f"\n{Fore.CYAN}Would you like to restart now? (y/n): ").strip().lower()
+                    if restart_choice in ['y', 'yes']:
+                        self.log_update_event("UPDATE_RESTART", "Application restarting after update")
+                        print(f"\n{Back.BLUE}{Fore.WHITE} 🔄 RESTARTING APPLICATION {Style.RESET_ALL}")
+                        self.loading_animation("Restarting", 1.0)
+                        
+                        # Restart the application
+                        import sys
+                        import subprocess
+                        subprocess.Popen([sys.executable, __file__])
+                        sys.exit(0)
+                    
+                except PermissionError:
+                    self.bounce_text(f"{Back.RED}{Fore.WHITE} ❌ PERMISSION DENIED {Style.RESET_ALL}", Fore.RED)
+                    print(f"{Fore.YELLOW}⚠️  Cannot overwrite file. Run as administrator or manually replace the file.")
+                    print(f"{Fore.CYAN}Download URL: {raw_url}")
+                    
+                except Exception as e:
+                    self.bounce_text(f"{Back.RED}{Fore.WHITE} ❌ WRITE ERROR {Style.RESET_ALL}", Fore.RED)
+                    print(f"{Fore.RED}Error writing file: {e}")
+                    
+            else:
+                self.bounce_text(f"{Back.RED}{Fore.WHITE} ❌ DOWNLOAD FAILED {Style.RESET_ALL}", Fore.RED)
+                print(f"{Fore.RED}HTTP {response.status_code}: Could not download update")
+                print(f"{Fore.CYAN}Manual download URL: {raw_url}")
+                
+        except requests.exceptions.RequestException as e:
+            self.bounce_text(f"{Back.RED}{Fore.WHITE} ❌ NETWORK ERROR {Style.RESET_ALL}", Fore.RED)
+            print(f"{Fore.RED}Network error: {str(e)[:50]}...")
+            print(f"{Fore.CYAN}Manual download URL: https://raw.githubusercontent.com/{self.github_repo}/main/downdetector.py")
+            
+        except Exception as e:
+            self.bounce_text(f"{Back.RED}{Fore.WHITE} ❌ UPDATE ERROR {Style.RESET_ALL}", Fore.RED)
+            print(f"{Fore.RED}Unexpected error: {str(e)[:50]}...")
     
     def open_browser(self, url):
         """Open URL in default browser"""
@@ -343,7 +504,11 @@ DEBUG_MODE=false
             cpu_percent = psutil.cpu_percent(interval=1)
             memory = psutil.virtual_memory()
             disk = psutil.disk_usage('/')
-        except ImportError:
+        except (ImportError, ModuleNotFoundError):
+            cpu_percent = "N/A"
+            memory = None
+            disk = None
+        except Exception:
             cpu_percent = "N/A"
             memory = None
             disk = None
@@ -384,8 +549,9 @@ DEBUG_MODE=false
         
         # This is a simulated update history - in a real app, you'd store this data
         history = [
-            {"version": "2.3.0", "date": "2025-10-21", "type": "Major", "description": "Added system updates feature"},
-            {"version": "2.2.0", "date": "2025-10-21", "type": "Patch", "description": "Bug fixes and performance improvements"},
+            {"version": "2.3.0", "date": "2025-10-21", "type": "Major", "description": "Added direct file download updates"},
+            {"version": "2.2.0", "date": "2025-10-21", "type": "Major", "description": "Added system updates feature"},
+            {"version": "2.1.0", "date": "2025-10-21", "type": "Patch", "description": "Bug fixes and performance improvements"},
             {"version": "2.0.0", "date": "2025-10-21", "type": "Major", "description": "Complete UI overhaul with animations"},
             {"version": "1.5.0", "date": "2025-10-21", "type": "Minor", "description": "Added sound notifications"},
             {"version": "1.0.0", "date": "2025-10-21", "type": "Major", "description": "Initial release"}
@@ -608,7 +774,7 @@ DEBUG_MODE=false
     def animated_border(self, width=60):
         """Animated border drawing"""
         print(f"{Fore.CYAN}╔", end="", flush=True)
-        for i in range(width):
+        for _ in range(width):
             print("═", end="", flush=True)
             time.sleep(self.animation_speed * 0.05)
         print("╗")
@@ -616,7 +782,7 @@ DEBUG_MODE=false
         print(f"{Fore.CYAN}║{' ' * width}║")
         
         print(f"{Fore.CYAN}╚", end="", flush=True)
-        for i in range(width):
+        for _ in range(width):
             print("═", end="", flush=True)
             time.sleep(self.animation_speed * 0.05)
         print("╝")
@@ -757,10 +923,13 @@ DEBUG_MODE=false
             if url not in self.websites:
                 self.websites.append(url)
                 self.save_websites()
+                self.log_system_event("WEBSITE_ADDED", f"Added website: {url}")
                 self.bounce_text(f"{Back.GREEN}{Fore.WHITE} ✅ SUCCESS {Style.RESET_ALL} Website added successfully!", Fore.GREEN)
             else:
+                self.log_system_event("WEBSITE_ADD_FAILED", f"Website already exists: {url}")
                 self.bounce_text(f"{Back.YELLOW}{Fore.BLACK} ⚠️  WARNING {Style.RESET_ALL} Website already exists!", Fore.YELLOW)
         else:
+            self.log_system_event("WEBSITE_ADD_FAILED", "Invalid URL provided")
             self.bounce_text(f"{Back.RED}{Fore.WHITE} ❌ ERROR {Style.RESET_ALL} Invalid URL provided!", Fore.RED)
         
         input(f"\n{Fore.CYAN}Press Enter to continue...")
@@ -798,6 +967,7 @@ DEBUG_MODE=false
                     self.loading_animation("Removing website", 0.8)
                     removed = self.websites.pop(choice - 1)
                     self.save_websites()
+                    self.log_system_event("WEBSITE_REMOVED", f"Removed website: {removed}")
                     self.bounce_text(f"{Back.GREEN}{Fore.WHITE} ✅ REMOVED {Style.RESET_ALL} {removed}", Fore.GREEN)
                 else:
                     self.bounce_text(f"{Back.RED}{Fore.WHITE} ❌ INVALID {Style.RESET_ALL} Please select a valid number!", Fore.RED)
@@ -808,8 +978,10 @@ DEBUG_MODE=false
             confirm = input(f"\n{Fore.RED}⚠️  Type 'DELETE ALL' to confirm removal: ").strip()
             if confirm == 'DELETE ALL':
                 self.loading_animation("Removing all websites", 1.2)
+                count = len(self.websites)
                 self.websites.clear()
                 self.save_websites()
+                self.log_system_event("ALL_WEBSITES_REMOVED", f"Removed {count} websites")
                 self.bounce_text(f"{Back.GREEN}{Fore.WHITE} ✅ SUCCESS {Style.RESET_ALL} All websites removed!", Fore.GREEN)
             else:
                 self.bounce_text(f"{Back.YELLOW}{Fore.BLACK} ❌ CANCELLED {Style.RESET_ALL} Operation cancelled!", Fore.YELLOW)
@@ -839,19 +1011,30 @@ DEBUG_MODE=false
     
     def check_website(self, url):
         """Check if a single website is up or down"""
+        start_time = time.time()
         try:
             headers = {
                 'User-Agent': os.getenv('USER_AGENT', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36')
             }
             response = requests.get(url, timeout=self.timeout, headers=headers)
+            response_time = (time.time() - start_time) * 1000  # Convert to milliseconds
+            
             if response.status_code == 200:
+                self.log_website_check(url, True, response.status_code, response_time)
                 return True, response.status_code
             else:
+                self.log_website_check(url, False, response.status_code, response_time)
                 return False, response.status_code
         except requests.exceptions.RequestException as e:
-            return False, str(e)[:50]
+            response_time = (time.time() - start_time) * 1000
+            error_msg = str(e)[:50]
+            self.log_website_check(url, False, error_msg, response_time)
+            return False, error_msg
         except Exception as e:
-            return False, f"Error: {str(e)[:40]}"
+            response_time = (time.time() - start_time) * 1000
+            error_msg = f"Error: {str(e)[:40]}"
+            self.log_website_check(url, False, error_msg, response_time)
+            return False, error_msg
     
     def check_all_websites(self):
         """Check all websites once with animated dashboard-style results"""
@@ -899,6 +1082,7 @@ DEBUG_MODE=false
             interval = self.monitor_interval
         
         self.loading_animation("Starting monitoring system", 1.5)
+        self.log_system_event("MONITORING_STARTED", f"Started monitoring {len(self.websites)} websites with {interval}s interval")
         
         try:
             cycle = 0
@@ -943,6 +1127,7 @@ DEBUG_MODE=false
                 
         except KeyboardInterrupt:
             self.loading_animation("Stopping monitoring", 0.8)
+            self.log_system_event("MONITORING_STOPPED", f"Monitoring stopped after {cycle} cycles")
             self.bounce_text(f"{Back.YELLOW}{Fore.BLACK} 🛑 MONITORING STOPPED {Style.RESET_ALL}", Fore.YELLOW)
             input(f"\n{Fore.CYAN}Press Enter to continue...")
     
@@ -960,17 +1145,18 @@ DEBUG_MODE=false
 │ Animation Speed: {Back.BLUE}{Fore.WHITE} {self.animation_speed} {Style.RESET_ALL}                          {Fore.CYAN}│
 │ Sound Effects: {Back.BLUE}{Fore.WHITE} {'Enabled' if self.enable_sounds else 'Disabled'} {Style.RESET_ALL}                       {Fore.CYAN}│
 │ Auto Updates: {Back.BLUE}{Fore.WHITE} {'Enabled' if self.auto_update_check else 'Disabled'} {Style.RESET_ALL}                        {Fore.CYAN}│
-│ Config File: {self.websites_file:<30}        │
+│ Log File: {self.log_file:<37}        │
+│ Debug Mode: {Back.BLUE}{Fore.WHITE} {'Enabled' if self.debug_mode else 'Disabled'} {Style.RESET_ALL}                      {Fore.CYAN}│
 │                                                           │
 │ {Back.GREEN}{Fore.WHITE} 1 {Style.RESET_ALL} Change Timeout   {Back.GREEN}{Fore.WHITE} 2 {Style.RESET_ALL} Toggle Sounds      {Fore.CYAN}│
 │ {Back.GREEN}{Fore.WHITE} 3 {Style.RESET_ALL} Edit .env File   {Back.GREEN}{Fore.WHITE} 4 {Style.RESET_ALL} Reload Settings    {Fore.CYAN}│
-│ {Back.BLACK}{Fore.WHITE} 5 {Style.RESET_ALL} Return to Menu                             {Fore.CYAN}│
+│ {Back.CYAN}{Fore.WHITE} 5 {Style.RESET_ALL} View Log File    {Back.BLACK}{Fore.WHITE} 6 {Style.RESET_ALL} Return to Menu     {Fore.CYAN}│
 │                                                           │
 └───────────────────────────────────────────────────────────┘"""
         
         print(f"\n{settings_content}")
         
-        choice = input(f"\n{Fore.YELLOW}Select option (1-5): ").strip()
+        choice = input(f"\n{Fore.YELLOW}Select option (1-6): ").strip()
         
         if choice == '1':
             new_timeout = input(f"\n{Fore.YELLOW}New timeout value (current: {self.timeout}): ").strip()
@@ -997,14 +1183,103 @@ DEBUG_MODE=false
             self.bounce_text(f"{Back.GREEN}{Fore.WHITE} ✅ RELOADED {Style.RESET_ALL} Settings updated from .env file!", Fore.GREEN)
         
         elif choice == '5':
+            self.view_log_file()
+        
+        elif choice == '6':
             return
         
-        if choice in ['1', '2', '3', '4']:
+        if choice in ['1', '2', '3', '4', '5']:
             input(f"\n{Fore.CYAN}Press Enter to continue...")
             self.settings()  # Show settings menu again
     
+    def view_log_file(self):
+        """View the contents of the log file"""
+        self.print_header()
+        self.bounce_text(f"{Fore.WHITE}{Back.CYAN}  📋 LOG FILE VIEWER  {Style.RESET_ALL}", Fore.WHITE)
+        
+        try:
+            if not os.path.exists(self.log_file):
+                self.bounce_text(f"{Back.YELLOW}{Fore.BLACK} ⚠️  NO LOG FILE {Style.RESET_ALL} Log file not found!", Fore.YELLOW)
+                print(f"{Fore.CYAN}Log file path: {os.path.abspath(self.log_file)}")
+                return
+            
+            self.loading_animation("Loading log file", 0.8)
+            
+            # Get file size
+            file_size = os.path.getsize(self.log_file)
+            
+            print(f"\n{Back.LIGHTBLACK_EX}{Fore.WHITE} Log File: {self.log_file} | Size: {file_size:,} bytes {Style.RESET_ALL}")
+            
+            with open(self.log_file, 'r', encoding='utf-8') as f:
+                lines = f.readlines()
+            
+            if not lines:
+                print(f"\n{Fore.YELLOW}Log file is empty.")
+                return
+            
+            print(f"\n{Fore.CYAN}┌─ Log Contents ────────────────────────────────────────────┐")
+            
+            # Show last 50 lines
+            display_lines = lines[-50:] if len(lines) > 50 else lines
+            
+            if len(lines) > 50:
+                print(f"{Fore.CYAN}│ ... showing last 50 of {len(lines)} total lines ...          │")
+                print(f"{Fore.CYAN}├───────────────────────────────────────────────────────────┤")
+            
+            for line in display_lines:
+                # Truncate long lines
+                display_line = line.strip()
+                if len(display_line) > 55:
+                    display_line = display_line[:52] + "..."
+                
+                # Color code based on log level
+                if "ERROR" in line:
+                    color = Fore.RED
+                elif "WARNING" in line:
+                    color = Fore.YELLOW
+                elif "INFO" in line:
+                    color = Fore.GREEN
+                else:
+                    color = Fore.WHITE
+                
+                print(f"{Fore.CYAN}│ {color}{display_line:<55}{Fore.CYAN} │")
+            
+            print(f"{Fore.CYAN}└───────────────────────────────────────────────────────────┘")
+            
+            print(f"\n{Fore.YELLOW}Log Options:")
+            print(f"{Back.GREEN}{Fore.WHITE} 1 {Style.RESET_ALL} Open log file in notepad")
+            print(f"{Back.BLUE}{Fore.WHITE} 2 {Style.RESET_ALL} Clear log file")
+            print(f"{Back.RED}{Fore.WHITE} 3 {Style.RESET_ALL} Return to settings")
+            
+            choice = input(f"\n{Fore.CYAN}Select option (1-3): ").strip()
+            
+            if choice == '1':
+                try:
+                    subprocess.run(['notepad.exe', self.log_file])
+                    self.bounce_text(f"{Back.GREEN}{Fore.WHITE} ✅ OPENED {Style.RESET_ALL} Log file opened in notepad!", Fore.GREEN)
+                except Exception as e:
+                    print(f"{Fore.RED}❌ Error opening notepad: {e}")
+            
+            elif choice == '2':
+                confirm = input(f"\n{Fore.RED}⚠️  Are you sure you want to clear the log file? (y/n): ").strip().lower()
+                if confirm in ['y', 'yes']:
+                    try:
+                        with open(self.log_file, 'w') as f:
+                            f.write("")
+                        self.log_system_event("LOG_CLEARED", "Log file cleared by user")
+                        self.bounce_text(f"{Back.GREEN}{Fore.WHITE} ✅ CLEARED {Style.RESET_ALL} Log file cleared!", Fore.GREEN)
+                    except Exception as e:
+                        print(f"{Fore.RED}❌ Error clearing log file: {e}")
+                else:
+                    self.bounce_text(f"{Fore.YELLOW}Operation cancelled", Fore.YELLOW)
+            
+        except Exception as e:
+            self.log_error("LOG_VIEW_ERROR", str(e))
+            print(f"{Fore.RED}❌ Error reading log file: {e}")
+    
     def run(self):
         """Main application loop"""
+        self.log_system_event("APP_STARTED", f"Down Detector v{self.current_version} main loop started")
         while True:
             try:
                 self.print_header()
