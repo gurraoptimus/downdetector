@@ -22,7 +22,9 @@
     /* Layout */
     :root { --accent: url(#g1); --text: #0b0b0d; --muted: #6b6f76; }
     .brand { font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-weight: 700; fill: var(--text); font-size:38px; letter-spacing: -0.6px; }
+    .brand-large { font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-weight: 800; fill: var(--text); font-size: 42px; letter-spacing: -0.8px; }
     .tag { font-size:14px; font-weight:600; fill:var(--muted); }
+    .registered { font-size: 16px; font-weight: 400; fill: var(--muted); }
 
     /* Bars animation */
     .bar { transform-origin: center bottom; }
@@ -80,7 +82,7 @@
     </g>
 
     <!-- detector circle + pulse -->
-    <g transform="translate(72,60)">
+    <g transform="translate(122,60)">
       <circle r="20" fill="#ffffff" stroke="#e8e8ea" stroke-width="1.5" />
       <circle class="pulse" r="20" />
       <!-- small center dot -->
@@ -90,6 +92,7 @@
     <!-- signal bars -->
     <g transform="translate(20,28)" aria-hidden="true">
       <!-- Bar bases -->
+      
       <rect x="0" y="48" width="12" height="8" rx="2" fill="#e9e9ec" />
       <rect x="18" y="40" width="12" height="16" rx="2" fill="#e9e9ec" />
       <rect x="36" y="24" width="12" height="32" rx="2" fill="#e9e9ec" />
@@ -105,9 +108,10 @@
     </g>
   </g>
 
-  <!-- Brand text -->
-  <g transform="translate(220,50)">
-    <text class="brand" x="0" y="42">Down<tspan style="fill: url(#g1);">Detector</tspan></text>
-    <text class="tag" x="0" y="72">Realtime outage monitoring</text>
+  <!-- Full Brand Logotype -->
+  <g transform="translate(220,45)">
+    <text class="brand-large" x="0" y="38">Down<tspan style="fill: url(#g1);">Detector</tspan><tspan class="registered">®</tspan></text>
+    <text class="tag" x="0" y="60">Real-time problem &amp; outage monitoring</text>
+    <text class="tag" x="0" y="78" style="font-size: 12px; opacity: 0.7;">Powered by user reports worldwide</text>
   </g>
 </svg>
