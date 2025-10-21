@@ -5,7 +5,7 @@
 > A real-time website monitoring application with an animated terminal interface.
 
 ## My WebsitsList
-- [List status: 168.](websits.json)
+- [List status: 168.](/websites.json)
 
 ## 📚 Documentation
 
