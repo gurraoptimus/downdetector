@@ -9,9 +9,10 @@
 - [API Documentation](docs/API-Reference.md) - Detailed API reference and integration guide
 - [Installation Guide](docs/INSTALLATION.md) - Complete setup instructions
 - [Configuration Guide](docs/CONFIGURATION.md) - Advanced configuration options
-- [Troubleshooting](docs/TROUBLESHOOTING.md) - Common issues and solutions
+- [Troubleshooting](docs/Troubleshooting.md) - Common issues and solutions
 - [Contributing Guidelines](docs/CONTRIBUTING.md) - How to contribute to the project
 - [Discussions](DISCUSSIONS.md) - Community discussions and feature requests
+- [Wiki](https://github.com/gurraoptimus/downdetector/wiki) - Comprehensive documentation and guides
 
 ## ✨ Features
 
