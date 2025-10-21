@@ -4,6 +4,9 @@
 
 > A real-time website monitoring application with an animated terminal interface.
 
+## My WebsitsList
+- [List status: 168.](websits.json)
+
 ## 📚 Documentation
 
 - [API Documentation](docs/API-Reference.md) - Detailed API reference and integration guide
