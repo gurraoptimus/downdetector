@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 
 # Load environment variables from .env file
 # update: .env file
-# update: app version 2.2.0 from github raw repository 
+# update: app version 1.0 from github raw repository
 load_dotenv()
 
 # Initialize colorama for cross-platform colored terminal text
@@ -24,7 +24,7 @@ init(autoreset=True)
 class DownDetectorApp:
     def __init__(self):
         self.websites = []
-        self.current_version = "2.3.0"  # Current app version
+        self.current_version = "2.0"  # Current app version
         self.github_repo = "gurraoptimus/downdetector"  # Replace with your actual repo
         self.update_url = f"https://api.github.com/repos/{self.github_repo}/releases/latest"
         
@@ -47,6 +47,115 @@ class DownDetectorApp:
         # Check for updates on startup if enabled
         if self.auto_update_check:
             self.check_for_updates(silent=True)
+    
+    def get_icon(self, icon_type):
+        """Get ASCII art icons for various elements"""
+        icons = {
+            # Status Icons
+            'online': '🟢',
+            'offline': '🔴',
+            'warning': '🟡',
+            'checking': '🔵',
+            'loading': '⏳',
+            'success': '✅',
+            'error': '❌',
+            'info': 'ℹ️',
+            'check': '✓',
+            
+            # Action Icons
+            'add': '➕',
+            'remove': '➖',
+            'edit': '✏️',
+            'save': '💾',
+            'delete': '🗑️',
+            'refresh': '🔄',
+            'settings': '⚙️',
+            'update': '📱',
+            'download': '⬇️',
+            'upload': '⬆️',
+            
+            # System Icons
+            'computer': '💻',
+            'network': '🌐',
+            'wifi': '📶',
+            'clock': '🕐',
+            'calendar': '📅',
+            'folder': '📁',
+            'file': '📄',
+            'log': '📋',
+            
+            # Navigation Icons
+            'home': '🏠',
+            'back': '⬅️',
+            'forward': '➡️',
+            'up': '⬆️',
+            'down': '⬇️',
+            'menu': '☰',
+            'exit': '🚪',
+            
+            # Monitor Icons
+            'monitor': '📊',
+            'dashboard': '📈',
+            'chart': '📉',
+            'graph': '📊',
+            'stats': '📈',
+            'report': '📄',
+            
+            # ASCII Art Icons
+            'server': '''
+    ┌─────┐
+    │ ▓▓▓ │
+    │ ▓▓▓ │
+    │ ▓▓▓ │
+    └─────┘''',
+            
+            'website': '''
+    ┌─────────┐
+    │ ╔═════╗ │
+    │ ║  🌐 ║ │
+    │ ╚═════╝ │
+    └─────────┘''',
+            
+            'monitor_big': '''
+    ┌─────────────┐
+    │   ◉ ◉ ◉     │
+    │             │
+    │    🌐 📊    │
+    │             │
+    └─────────────┘''',
+            
+            'check_mark': '✓',
+            'cross_mark': '✗',
+            
+            'arrow_right': '▶',
+            'arrow_left': '◀',
+            'arrow_up': '▲',
+            'arrow_down': '▼',
+            'bullet': '●',
+            'diamond': '◆',
+            'star': '★',
+            'heart': '♥',
+            'lightning': '⚡',
+            'shield': '🛡️',
+            'key': '🔑',
+            'lock': '🔒',
+            'unlock': '🔓'
+        }
+        
+        return icons.get(icon_type, '?')
+    
+    def display_animated_icon(self, icon_type, duration=2.0):
+        """Display an animated icon with effects"""
+        icon = self.get_icon(icon_type)
+        
+        # Simple pulse animation
+        for i in range(int(duration * 10)):
+            if i % 10 < 5:
+                print(f"\r{Fore.CYAN}{icon}{Style.RESET_ALL}", end='', flush=True)
+            else:
+                print(f"\r{Fore.YELLOW}{icon}{Style.RESET_ALL}", end='', flush=True)
+            time.sleep(0.1)
+        print()
     
     def setup_logging(self):
         """Setup logging configuration"""
@@ -231,16 +340,16 @@ DEBUG_MODE=false
             return False
     
     def display_update_available(self, version, notes, url, date):
-        """Display update information in a formatted way"""
-        print(f"\n{Back.GREEN}{Fore.WHITE} 🚀 NEW UPDATE AVAILABLE {Style.RESET_ALL}")
+        """Display update information in a formatted way with icons"""
+        print(f"\n{Back.GREEN}{Fore.WHITE} {self.get_icon('update')} NEW UPDATE AVAILABLE {self.get_icon('lightning')} {Style.RESET_ALL}")
         
         update_info = f"""{Fore.CYAN}┌─ Update Information ──────────────────────────────────────┐
 │                                                           │
-│ Current Version: {Back.BLUE}{Fore.WHITE} {self.current_version} {Style.RESET_ALL}                         {Fore.CYAN}│
-│ Latest Version:  {Back.GREEN}{Fore.WHITE} {version} {Style.RESET_ALL}                           {Fore.CYAN}│
-│ Release Date:    {date[:10] if date else 'Unknown'}                        │
+│ {self.get_icon('info')} Current Version: {Back.BLUE}{Fore.WHITE} {self.current_version} {Style.RESET_ALL}                      {Fore.CYAN}│
+│ {self.get_icon('download')} Latest Version:  {Back.GREEN}{Fore.WHITE} {version} {Style.RESET_ALL}                        {Fore.CYAN}│
+│ {self.get_icon('calendar')} Release Date:    {date[:10] if date else 'Unknown'}                     {Fore.CYAN}│
 │                                                           │
-│ {Back.YELLOW}{Fore.BLACK} RELEASE NOTES {Style.RESET_ALL}                                  {Fore.CYAN}│
+│ {Back.YELLOW}{Fore.BLACK} {self.get_icon('file')} RELEASE NOTES {Style.RESET_ALL}                              {Fore.CYAN}│
 │                                                           │"""
         
         print(update_info)
@@ -394,23 +503,23 @@ DEBUG_MODE=false
         input(f"\n{Fore.CYAN}Press Enter to continue...")
     
     def system_updates_menu(self):
-        """Main system updates menu"""
+        """Main system updates menu with icons"""
         self.print_header()
-        self.bounce_text(f"{Fore.WHITE}{Back.BLUE}  🔄 SYSTEM UPDATES  {Style.RESET_ALL}", Fore.WHITE)
+        self.bounce_text(f"{Fore.WHITE}{Back.BLUE}  {self.get_icon('update')} SYSTEM UPDATES {self.get_icon('settings')}  {Style.RESET_ALL}", Fore.WHITE)
         
         update_menu = f"""{Fore.CYAN}
 ┌─ Update Management ───────────────────────────────────────┐
 │                                                           │
-│ Current Version: {Back.BLUE}{Fore.WHITE} Down Detector v{self.current_version} {Style.RESET_ALL}            {Fore.CYAN}│
+│ {self.get_icon('info')} Current Version: {Back.BLUE}{Fore.WHITE} Down Detector v{self.current_version} {Style.RESET_ALL}         {Fore.CYAN}│
 │                                                           │
-│ Auto-Check: {Back.BLUE}{Fore.WHITE} {'Enabled' if self.auto_update_check else 'Disabled'} {Style.RESET_ALL}                      {Fore.CYAN}│
+│ {self.get_icon('settings')} Auto-Check: {Back.BLUE}{Fore.WHITE} {'Enabled' if self.auto_update_check else 'Disabled'} {Style.RESET_ALL}                   {Fore.CYAN}│
 │                                                           │
-│ {Back.GREEN}{Fore.WHITE} 1 {Style.RESET_ALL} Check for Updates                             {Fore.CYAN}│
-│ {Back.BLUE}{Fore.WHITE} 2 {Style.RESET_ALL} View Current Version Info                     {Fore.CYAN}│
-│ {Back.YELLOW}{Fore.BLACK} 3 {Style.RESET_ALL} Toggle Auto-Update Check                      {Fore.CYAN}│
-│ {Back.MAGENTA}{Fore.WHITE} 4 {Style.RESET_ALL} System Information                            {Fore.CYAN}│
-│ {Back.CYAN}{Fore.BLACK} 5 {Style.RESET_ALL} Update History                                {Fore.CYAN}│
-│ {Back.BLACK}{Fore.WHITE} 6 {Style.RESET_ALL} Return to Main Menu                           {Fore.CYAN}│
+│ {Back.GREEN}{Fore.WHITE} 1 {Style.RESET_ALL} {self.get_icon('check')} Check for Updates                          {Fore.CYAN}│
+│ {Back.BLUE}{Fore.WHITE} 2 {Style.RESET_ALL} {self.get_icon('info')} View Current Version Info                  {Fore.CYAN}│
+│ {Back.YELLOW}{Fore.BLACK} 3 {Style.RESET_ALL} {self.get_icon('settings')} Toggle Auto-Update Check                   {Fore.CYAN}│
+│ {Back.MAGENTA}{Fore.WHITE} 4 {Style.RESET_ALL} {self.get_icon('computer')} System Information                         {Fore.CYAN}│
+│ {Back.CYAN}{Fore.BLACK} 5 {Style.RESET_ALL} {self.get_icon('log')} Update History                             {Fore.CYAN}│
+│ {Back.BLACK}{Fore.WHITE} 6 {Style.RESET_ALL} {self.get_icon('back')} Return to Main Menu                        {Fore.CYAN}│
 │                                                           │
 └───────────────────────────────────────────────────────────┘"""
         
@@ -438,25 +547,27 @@ DEBUG_MODE=false
             self.system_updates_menu()  # Show menu again
     
     def show_version_info(self):
-        """Display detailed version information"""
+        """Display detailed version information with enhanced styling"""
         self.loading_animation("Loading version information", 0.8)
         
         version_info = f"""{Fore.CYAN}
 ┌─ Version Information ─────────────────────────────────────┐
 │                                                           │
-│ Application: Down Detector                                │
-│ Version: v{self.current_version}                          │
-│ Developer: Gurraoptimus Development                       │
-│ Platform: {platform.system()} {platform.release()}        │
-│ Python Version: {platform.python_version()}               │
+│ {self.get_icon('computer')} Application: Down Detector                             │
+│ {self.get_icon('info')} Version: v{self.current_version}                                      │
+│ {self.get_icon('star')} Developer: Gurraoptimus Development                             │
+│ {self.get_icon('computer')} Platform: {platform.system()} {platform.release()}                     │
+│ {self.get_icon('settings')} Python Version: {platform.python_version()}                        │
 │                                                           │
-│ Features in this version:                                 │
-│ • Real-time website monitoring                            │
-│ • Animated dashboard interface                            │
-│ • Sound notifications                                     │
-│ • Configuration management                                │
-│ • System updates                                          │
-│ • Multi-platform support                                  │
+│ {self.get_icon('success')} Features in v{self.current_version}:                                    │
+│ {self.get_icon('bullet')} Enhanced UI with comprehensive icon system            │
+│ {self.get_icon('bullet')} Real-time website monitoring                          │
+│ {self.get_icon('bullet')} Animated dashboard interface                          │
+│ {self.get_icon('bullet')} Sound notifications                                   │
+│ {self.get_icon('bullet')} Advanced logging system                               │
+│ {self.get_icon('bullet')} Direct GitHub update downloads                        │
+│ {self.get_icon('bullet')} Multi-platform support                                │
+│ {self.get_icon('bullet')} Professional visual design                            │
 │                                                           │
 └───────────────────────────────────────────────────────────┘
 """
@@ -549,12 +660,7 @@ DEBUG_MODE=false
         
         # This is a simulated update history - in a real app, you'd store this data
         history = [
-            {"version": "2.3.0", "date": "2025-10-21", "type": "Major", "description": "Added direct file download updates"},
-            {"version": "2.2.0", "date": "2025-10-21", "type": "Major", "description": "Added system updates feature"},
-            {"version": "2.1.0", "date": "2025-10-21", "type": "Patch", "description": "Bug fixes and performance improvements"},
-            {"version": "2.0.0", "date": "2025-10-21", "type": "Major", "description": "Complete UI overhaul with animations"},
-            {"version": "1.5.0", "date": "2025-10-21", "type": "Minor", "description": "Added sound notifications"},
-            {"version": "1.0.0", "date": "2025-10-21", "type": "Major", "description": "Initial release"}
+            {"version": "1.0", "date": "2025-10-21", "type": "Major", "description": "Initial release with full features"}
         ]
         
         print(f"\n{Back.BLUE}{Fore.WHITE} 📊 UPDATE HISTORY {Style.RESET_ALL}")
@@ -599,23 +705,23 @@ DEBUG_MODE=false
                 print(f"{Fore.GREEN}✅ Default .env file created successfully!")
                 time.sleep(1)
         
-        # ASCII Art Logo
+        # ASCII Art Logo with enhanced visual design
         logo = [
             "╔═══════════════════════════════════════════════════════════════════╗",
-            "║ ██████╗  ██████╗ ██╗    ██╗███╗   ██╗                              ║",
-            "║ ██╔══██╗██╔═══██╗██║    ██║████╗  ██║                              ║",
-            "║ ██║  ██║██║   ██║██║ █╗ ██║██╔██╗ ██║                              ║",
+            "║ ██████╗  ██████╗ ██╗    ██╗███╗   ██╗    🌐                        ║",
+            "║ ██╔══██╗██╔═══██╗██║    ██║████╗  ██║   📊                         ║",
+            "║ ██║  ██║██║   ██║██║ █╗ ██║██╔██╗ ██║    ⚡                        ║",
             "║ ██║  ██║██║   ██║██║███╗██║██║╚██╗██║                              ║",
-            "║ ██████╔╝╚██████╔╝╚███╔███╔╝██║ ╚████║                              ║",
-            "║ ╚═════╝  ╚═════╝  ╚══╝╚══╝ ╚═╝  ╚═══╝                              ║",
-            "║                                                                    ║",
+            "║ ██████╔╝╚██████╔╝╚███╔███╔╝██║ ╚████║     🔍                      ║",
+            "║ ╚═════╝  ╚═════╝  ╚══╝╚══╝ ╚═╝  ╚═══╝    📱                       ║",
+            "║                                          💻                       ║",
             "║ ██████╗ ███████╗████████╗███████╗ ██████╗████████╗ ██████╗ ██████╗ ║",
             "║ ██╔══██╗██╔════╝╚══██╔══╝██╔════╝██╔════╝╚══██╔══╝██╔═══██╗██╔══██╗║",
             "║ ██║  ██║█████╗     ██║   █████╗  ██║        ██║   ██║   ██║██████╔╝║",
             "║ ██║  ██║██╔══╝     ██║   ██╔══╝  ██║        ██║   ██║   ██║██╔══██╗║",
             "║ ██████╔╝███████╗   ██║   ███████╗╚██████╗   ██║   ╚██████╔╝██║  ██║║",
             "║ ╚═════╝ ╚══════╝   ╚═╝   ╚══════╝ ╚═════╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝║",
-            "║                                                                    ║",
+            "║                      🚀 Real-Time Monitoring 🚀                   ║",
             "╚═══════════════════════════════════════════════════════════════════╝"
         ]
         
@@ -626,19 +732,19 @@ DEBUG_MODE=false
             time.sleep(self.animation_speed * 0.5)
         print(Style.RESET_ALL)
         
-        # System info display
+        # System info display with icons
         system_info = [
-            f"{Fore.GREEN}[SYSTEM] Initializing Down Detector v{self.current_version}...",
-            f"{Fore.GREEN}[SYSTEM] Developed by Gurraoptimus Development",
-            f"{Fore.GREEN}[SYSTEM] Loading core modules...",
-            f"{Fore.YELLOW}[BOOT  ] Checking system requirements...",
-            f"{Fore.YELLOW}[BOOT  ] Loading network stack...",
-            f"{Fore.YELLOW}[BOOT  ] Initializing monitoring engine...",
-            f"{Fore.BLUE}[CONFIG] Loading configuration files...",
-            f"{Fore.BLUE}[CONFIG] Loading .env settings...",
-            f"{Fore.BLUE}[CONFIG] Setting up user preferences...",
-            f"{Fore.MAGENTA}[UPDATE] Checking for system updates...",
-            f"{Fore.MAGENTA}[READY ] System initialized successfully!"
+            f"{Fore.GREEN}[{self.get_icon('computer')}] Initializing Down Detector v{self.current_version}...",
+            f"{Fore.GREEN}[{self.get_icon('star')}] Developed by Gurraoptimus Development",
+            f"{Fore.GREEN}[{self.get_icon('settings')}] Loading core modules...",
+            f"{Fore.YELLOW}[{self.get_icon('check')}] Checking system requirements...",
+            f"{Fore.YELLOW}[{self.get_icon('network')}] Loading network stack...",
+            f"{Fore.YELLOW}[{self.get_icon('monitor')}] Initializing monitoring engine...",
+            f"{Fore.BLUE}[{self.get_icon('file')}] Loading configuration files...",
+            f"{Fore.BLUE}[{self.get_icon('settings')}] Loading .env settings...",
+            f"{Fore.BLUE}[{self.get_icon('settings')}] Setting up user preferences...",
+            f"{Fore.MAGENTA}[{self.get_icon('update')}] Checking for system updates...",
+            f"{Fore.MAGENTA}[{self.get_icon('success')}] System initialized successfully!"
         ]
         
         print(f"\n{Fore.WHITE}SYSTEM BOOTUP SEQUENCE{Style.RESET_ALL}")
@@ -652,9 +758,9 @@ DEBUG_MODE=false
         print(f"\n{Fore.CYAN}Final initialization:")
         self.progress_bar(1.5, 40)
         
-        # Success message with sound
+        # Success message with icons and sound
         self.play_pop_sound("online")
-        print(f"\n{Back.GREEN}{Fore.WHITE} ✅ SYSTEM READY - DOWN DETECTOR ONLINE {Style.RESET_ALL}\n")
+        print(f"\n{Back.GREEN}{Fore.WHITE} {self.get_icon('success')} SYSTEM READY - DOWN DETECTOR ONLINE {self.get_icon('lightning')} {Style.RESET_ALL}\n")
         time.sleep(0.5)
     
     def reboot_system(self):
@@ -862,15 +968,65 @@ DEBUG_MODE=false
         """Clear the terminal screen"""
         os.system('cls' if os.name == 'nt' else 'clear')
     
+    def display_app_icon(self):
+        """Display the main application icon"""
+        icon_art = f"""
+{Fore.CYAN}         ╔═══════════════════════════════╗
+         ║        {self.get_icon('network')} DOWN DETECTOR {self.get_icon('monitor')}        ║
+         ║                               ║
+         ║   {self.get_icon('check')} Real-Time Monitoring {self.get_icon('lightning')}   ║
+         ║   {self.get_icon('computer')} Website Status Checker {self.get_icon('wifi')} ║
+         ║                               ║
+         ║     {self.get_icon('star')} v{self.current_version} - Ready! {self.get_icon('success')}     ║
+         ╚═══════════════════════════════╝{Style.RESET_ALL}
+        """
+        print(icon_art)
+    
+    def display_status_icons(self, status, website_name=""):
+        """Display status-specific icons with animations"""
+        if status.upper() == "ONLINE" or status == True:
+            icon = self.get_icon('online')
+            color = Fore.GREEN
+            bg_color = Back.GREEN
+            text_color = Fore.WHITE
+        elif status.upper() == "OFFLINE" or status == False:
+            icon = self.get_icon('offline')
+            color = Fore.RED
+            bg_color = Back.RED
+            text_color = Fore.WHITE
+        elif status.upper() == "CHECKING":
+            icon = self.get_icon('checking')
+            color = Fore.BLUE
+            bg_color = Back.BLUE
+            text_color = Fore.WHITE
+        elif status.upper() == "WARNING":
+            icon = self.get_icon('warning')
+            color = Fore.YELLOW
+            bg_color = Back.YELLOW
+            text_color = Fore.BLACK
+        else:
+            icon = self.get_icon('info')
+            color = Fore.CYAN
+            bg_color = Back.CYAN
+            text_color = Fore.BLACK
+        
+        if website_name:
+            print(f"{bg_color}{text_color} {icon} {status.upper()} {Style.RESET_ALL} {color}{website_name}{Style.RESET_ALL}")
+        else:
+            print(f"{bg_color}{text_color} {icon} {status.upper()} {Style.RESET_ALL}")
+        
+        return icon
+    
     def print_header(self):
-        """Print the app header with animated design"""
+        """Print the app header with animated design and icons"""
         self.clear_screen()
         
+        # Enhanced header with icons
         header_lines = [
             "╔══════════════════════════════════════════════════════════╗",
-            "║                    🌐 DOWN DETECTOR                      ║",
-            "║                 Real-Time Website Monitor                ║",
-            "║               Built by: Gurraoptimus Development         ║",
+            f"║               {self.get_icon('network')} DOWN DETECTOR {self.get_icon('monitor')}               ║",
+            f"║              {self.get_icon('computer')} Real-Time Website Monitor {self.get_icon('wifi')}            ║",
+            f"║            {self.get_icon('settings')} Built by: Gurraoptimus Development {self.get_icon('star')}         ║",
             "╚══════════════════════════════════════════════════════════╝"
         ]
         
@@ -879,39 +1035,42 @@ DEBUG_MODE=false
             print(line)
         print(Style.RESET_ALL)
         
-        nav_items = " █ HOME █ MONITOR █ SETTINGS █ UPDATES █ ABOUT █"
+        # Enhanced navigation with icons
+        nav_items = f" {self.get_icon('home')} HOME {self.get_icon('monitor')} MONITOR {self.get_icon('settings')} SETTINGS {self.get_icon('update')} UPDATES {self.get_icon('info')} ABOUT "
         print(f"{Back.CYAN}{Fore.BLACK} {nav_items} {Style.RESET_ALL}\n")
     
     def print_menu(self):
-        """Print the main menu with animations"""
+        """Print the main menu with animations and icons"""
         menu_content = f"""{Fore.CYAN}┌─ Main Menu ──────────────────────────────────────────────┐
 │                                                           │
-│  {Back.GREEN}{Fore.BLACK} 1 {Style.RESET_ALL} Add Website     {Back.GREEN}{Fore.BLACK} 2 {Style.RESET_ALL} Remove Website  {Fore.CYAN}│
+│  {Back.GREEN}{Fore.BLACK} 1 {Style.RESET_ALL} {self.get_icon('add')} Add Website    {Back.GREEN}{Fore.BLACK} 2 {Style.RESET_ALL} {self.get_icon('remove')} Remove Website {Fore.CYAN}│
 │                                                           │
-│  {Back.BLUE}{Fore.WHITE} 3 {Style.RESET_ALL} View List       {Back.BLUE}{Fore.WHITE} 4 {Style.RESET_ALL} Check All       {Fore.CYAN}│
+│  {Back.BLUE}{Fore.WHITE} 3 {Style.RESET_ALL} {self.get_icon('file')} View List      {Back.BLUE}{Fore.WHITE} 4 {Style.RESET_ALL} {self.get_icon('check')} Check All      {Fore.CYAN}│
 │                                                           │
-│  {Back.MAGENTA}{Fore.WHITE} 5 {Style.RESET_ALL} Start Monitor   {Back.YELLOW}{Fore.BLACK} 6 {Style.RESET_ALL} Settings        {Fore.CYAN}│
+│  {Back.MAGENTA}{Fore.WHITE} 5 {Style.RESET_ALL} {self.get_icon('monitor')} Start Monitor  {Back.YELLOW}{Fore.BLACK} 6 {Style.RESET_ALL} {self.get_icon('settings')} Settings       {Fore.CYAN}│
 │                                                           │
-│  {Back.CYAN}{Fore.BLACK} 7 {Style.RESET_ALL} System Updates  {Back.RED}{Fore.WHITE} 8 {Style.RESET_ALL} Reset System    {Fore.CYAN}│
+│  {Back.CYAN}{Fore.BLACK} 7 {Style.RESET_ALL} {self.get_icon('update')} System Updates {Back.RED}{Fore.WHITE} 8 {Style.RESET_ALL} {self.get_icon('refresh')} Reset System   {Fore.CYAN}│
 │                                                           │
-│  {Back.LIGHTBLACK_EX}{Fore.WHITE} 9 {Style.RESET_ALL} Reboot App      {Back.BLACK}{Fore.WHITE} 0 {Style.RESET_ALL} Exit App        {Fore.CYAN}│
+│  {Back.LIGHTBLACK_EX}{Fore.WHITE} 9 {Style.RESET_ALL} {self.get_icon('computer')} Reboot App     {Back.BLACK}{Fore.WHITE} 0 {Style.RESET_ALL} {self.get_icon('exit')} Exit App       {Fore.CYAN}│
 │                                                           │
 └───────────────────────────────────────────────────────────┘"""
         
         print(menu_content)
         
-        print(f"\n{Back.LIGHTBLACK_EX}{Fore.WHITE} Status: {len(self.websites)} websites | v{self.current_version} | Timeout: {self.timeout}s | Sounds: {'ON' if self.enable_sounds else 'OFF'} {Style.RESET_ALL}")
+        # Enhanced status bar with icons
+        status_info = f" {self.get_icon('stats')} Status: {len(self.websites)} websites | {self.get_icon('info')} v{self.current_version} | {self.get_icon('clock')} Timeout: {self.timeout}s | {self.get_icon('settings')} Sounds: {'ON' if self.enable_sounds else 'OFF'} "
+        print(f"\n{Back.LIGHTBLACK_EX}{Fore.WHITE}{status_info}{Style.RESET_ALL}")
         self.pulsing_status("System Ready", True)
     
     def add_website(self):
-        """Add a website to monitor with animated design"""
+        """Add a website to monitor with animated design and icons"""
         self.print_header()
-        self.bounce_text(f"{Fore.WHITE}{Back.GREEN}  ➕ ADD NEW WEBSITE  {Style.RESET_ALL}", Fore.WHITE)
+        self.bounce_text(f"{Fore.WHITE}{Back.GREEN}  {self.get_icon('add')} ADD NEW WEBSITE {self.get_icon('network')}  {Style.RESET_ALL}", Fore.WHITE)
         
         print(f"\n{Fore.CYAN}┌─ Website Registration Form ──────────────────────────────┐")
         print(f"{Fore.CYAN}│                                                           │")
         
-        url = input(f"{Fore.CYAN}│ Website URL: {Fore.YELLOW}").strip()
+        url = input(f"{Fore.CYAN}│ {self.get_icon('network')} Website URL: {Fore.YELLOW}").strip()
         print(f"{Fore.CYAN}│                                                           │")
         print(f"{Fore.CYAN}└───────────────────────────────────────────────────────────┘")
         
@@ -989,21 +1148,21 @@ DEBUG_MODE=false
         input(f"\n{Fore.CYAN}Press Enter to continue...")
     
     def view_websites(self):
-        """Display all websites in a table format with animations"""
+        """Display all websites in a table format with animations and icons"""
         self.print_header()
-        self.bounce_text(f"{Fore.WHITE}{Back.BLUE}  📋 WEBSITE DASHBOARD  {Style.RESET_ALL}", Fore.WHITE)
+        self.bounce_text(f"{Fore.WHITE}{Back.BLUE}  {self.get_icon('dashboard')} WEBSITE DASHBOARD {self.get_icon('monitor')}  {Style.RESET_ALL}", Fore.WHITE)
         
         if not self.websites:
-            self.bounce_text(f"{Back.YELLOW}{Fore.BLACK} ⚠️  NO DATA {Style.RESET_ALL} No websites configured yet!", Fore.YELLOW)
+            self.bounce_text(f"{Back.YELLOW}{Fore.BLACK} {self.get_icon('warning')} NO DATA {Style.RESET_ALL} No websites configured yet!", Fore.YELLOW)
         else:
             self.loading_animation("Loading dashboard", 0.8)
             
             print(f"\n{Fore.CYAN}┌─ Monitored Websites ──────────────────────────────────────┐")
-            print(f"{Fore.CYAN}│ {Back.BLUE}{Fore.WHITE} # {Style.RESET_ALL} {Back.BLUE}{Fore.WHITE} Website URL                                      {Style.RESET_ALL} {Fore.CYAN}│")
+            print(f"{Fore.CYAN}│ {Back.BLUE}{Fore.WHITE} # {Style.RESET_ALL} {Back.BLUE}{Fore.WHITE} {self.get_icon('network')} Website URL                                 {Style.RESET_ALL} {Fore.CYAN}│")
             print(f"{Fore.CYAN}├───┼──────────────────────────────────────────────────────┤")
             
             for i, website in enumerate(self.websites, 1):
-                print(f"{Fore.CYAN}│ {i:>1} │ {website:<52} │")
+                print(f"{Fore.CYAN}│ {i:>1} │ {self.get_icon('bullet')} {website:<46} │")
             
             print(f"{Fore.CYAN}└───┴──────────────────────────────────────────────────────┘")
         
@@ -1037,17 +1196,17 @@ DEBUG_MODE=false
             return False, error_msg
     
     def check_all_websites(self):
-        """Check all websites once with animated dashboard-style results"""
+        """Check all websites once with animated dashboard-style results and icons"""
         self.print_header()
-        self.bounce_text(f"{Fore.WHITE}{Back.MAGENTA}  🔍 WEBSITE STATUS CHECK  {Style.RESET_ALL}", Fore.WHITE)
+        self.bounce_text(f"{Fore.WHITE}{Back.MAGENTA}  {self.get_icon('check')} WEBSITE STATUS CHECK {self.get_icon('monitor')}  {Style.RESET_ALL}", Fore.WHITE)
         
         if not self.websites:
-            self.bounce_text(f"{Back.RED}{Fore.WHITE} ❌ NO WEBSITES {Style.RESET_ALL} No websites to check!", Fore.RED)
+            self.bounce_text(f"{Back.RED}{Fore.WHITE} {self.get_icon('error')} NO WEBSITES {Style.RESET_ALL} No websites to check!", Fore.RED)
             input(f"\n{Fore.CYAN}Press Enter to continue...")
             return
         
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        print(f"\n{Back.LIGHTBLACK_EX}{Fore.WHITE} Scan Time: {timestamp} {Style.RESET_ALL}")
+        print(f"\n{Back.LIGHTBLACK_EX}{Fore.WHITE} {self.get_icon('clock')} Scan Time: {timestamp} {Style.RESET_ALL}")
         
         print(f"\n{Fore.CYAN}┌─ Live Status Report ──────────────────────────────────────┐")
         
@@ -1056,10 +1215,10 @@ DEBUG_MODE=false
             is_up, status = self.check_website(website)
             
             if is_up:
-                status_display = f"{Back.GREEN}{Fore.WHITE} ● ONLINE {Style.RESET_ALL}"
+                status_display = f"{Back.GREEN}{Fore.WHITE} {self.get_icon('online')} ONLINE {Style.RESET_ALL}"
                 self.play_pop_sound("online")
             else:
-                status_display = f"{Back.RED}{Fore.WHITE} ● OFFLINE {Style.RESET_ALL}"
+                status_display = f"{Back.RED}{Fore.WHITE} {self.get_icon('offline')} OFFLINE {Style.RESET_ALL}"
                 self.play_pop_sound("offline")
             
             print(f"{Fore.CYAN}│ {status_display} {website[:40]:<40} {Fore.YELLOW}({status}) {Fore.CYAN}│")
