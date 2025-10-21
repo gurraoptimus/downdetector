@@ -1,8 +1,17 @@
 <p align="center">
-    <img src="https://github.com/gurraoptimus/downdetector/blob/main/assets/downdetector-logo.svg" alt="Down Detector Logo" width="600" height="600">
+   <img src="https://github.com/gurraoptimus/downdetector/blob/main/assets/downdetector-logo.svg" alt="Down Detector Logo" width="600" height="600">
 </p>
 
 > A real-time website monitoring application with an animated terminal interface.
+
+## 📚 Documentation
+
+- [API Documentation](docs/API-Reference.md) - Detailed API reference and integration guide
+- [Installation Guide](docs/INSTALLATION.md) - Complete setup instructions
+- [Configuration Guide](docs/CONFIGURATION.md) - Advanced configuration options
+- [Troubleshooting](docs/TROUBLESHOOTING.md) - Common issues and solutions
+- [Contributing Guidelines](docs/CONTRIBUTING.md) - How to contribute to the project
+- [Discussions](DISCUSSIONS.md) - Community discussions and feature requests
 
 ## ✨ Features
 
@@ -20,7 +29,7 @@
 1. Clone or download the repository
 2. Install required dependencies:
    ```bash
-   pip install requests colorama python-dotenv
+   pip install -r requirements.txt
    ```
 3. Run the application:
    ```bash
@@ -90,6 +99,14 @@ DEBUG_MODE=false
 
 ## 📦 Dependencies
 
+The project includes a `requirements.txt` file for easy dependency management:
+
+```txt
+requests>=2.25.1
+colorama>=0.4.4
+python-dotenv>=0.19.0
+```
+
 | Package | Purpose |
 |---------|---------|
 | `requests` | HTTP requests for website checking |
@@ -116,6 +133,6 @@ Comprehensive logging system with:
 
 ---
 
-**Current Version:** `2.3.0`  
+**Current Version:** `1.0`  
 **Developer:** Gurraoptimus Development  
 **License:** Open Source - Check repository for details
